@@ -12,6 +12,9 @@ const theme = {
       2: "#DAD3FF",
       3: "#B6AAFF",
     },
+    red: {
+      3: "#FF0000",
+    },
   },
 } as const;
 
