@@ -3,9 +3,9 @@ import PositiveButtonBar from "@/components/common/button/PositiveButtonBar";
 import HeaderView from "@/components/common/headerView/HeaderView";
 import SearchInput from "@/components/common/input/SearchInput";
 import PostListItem from "@/components/posts/PostListItem";
-import { colors } from "@/theme/color";
-import { Flex, HStack, Stack } from "@chakra-ui/react";
+import { HStack, Stack } from "@chakra-ui/react";
 import _ from "lodash";
+import { useRouter } from "next/router";
 import React, { useState } from "react";
 
 /**
@@ -22,6 +22,7 @@ function Posts() {
     like: 0,
   };
   const tmps = _.range(0, 10);
+  const router = useRouter();
 
   const datas = tmps.map((item) => initData);
 
@@ -36,7 +37,10 @@ function Posts() {
         />
 
         <HStack spacing={"18px"}>
-          <PositiveButtonBar name="글 작성" onClick={() => {}} />
+          <PositiveButtonBar
+            name="글 작성"
+            onClick={() => router.push("/posts/register")}
+          />
 
           <DefaultButtonBar name="로그인" onClick={() => {}} />
         </HStack>

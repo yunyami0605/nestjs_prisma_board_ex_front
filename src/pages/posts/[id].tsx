@@ -54,7 +54,7 @@ function PostContent() {
           onChange={(e) => setSearchText(e.target.value)}
         />
 
-        <TextButton>목록가기</TextButton>
+        <TextButton onClick={router.back}>목록가기</TextButton>
       </HeaderView>
 
       {/* 게시글 내용 */}
