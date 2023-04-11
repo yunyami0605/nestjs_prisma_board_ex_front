@@ -3,15 +3,17 @@ import PositiveButtonBar from "@/components/common/button/PositiveButtonBar";
 import HeaderView from "@/components/common/headerView/HeaderView";
 import SearchInput from "@/components/common/input/SearchInput";
 import PostListItem from "@/components/posts/PostListItem";
+import { deleteToken, getUserId } from "@/utils/auth";
 import { HStack, Stack } from "@chakra-ui/react";
 import _ from "lodash";
 import { useRouter } from "next/router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 /**
  *@description 게시글 리스트
  */
 function Posts() {
+  const [isLogin, setIsLogin] = useState(false);
   const initData = {
     title: "string",
     contents: "",
@@ -28,6 +30,24 @@ function Posts() {
 
   const [searchText, setSearchText] = useState("");
 
+  const onLogin = () => router.push("/login");
+
+  const onLogout = () => {
+    deleteToken();
+    setIsLogin(false);
+  };
+
+  useEffect(() => {
+    const id = getUserId();
+
+    // 토큰 id값 있을 시, 로그인되었다는 여부 표시
+    if (id) {
+      setIsLogin(true);
+    } else {
+      setIsLogin(false);
+    }
+  }, []);
+
   return (
     <Stack>
       <HeaderView>
@@ -42,7 +62,10 @@ function Posts() {
             onClick={() => router.push("/posts/register")}
           />
 
-          <DefaultButtonBar name="로그인" onClick={() => {}} />
+          <DefaultButtonBar
+            name={isLogin ? "로그아웃" : "로그인"}
+            onClick={isLogin ? onLogout : onLogin}
+          />
         </HStack>
       </HeaderView>
 
