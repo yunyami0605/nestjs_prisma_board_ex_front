@@ -1,3 +1,4 @@
+import { useGetPosts } from "@/api/post/query";
 import DefaultButtonBar from "@/components/common/button/DefaultButtonBar";
 import PositiveButtonBar from "@/components/common/button/PositiveButtonBar";
 import HeaderView from "@/components/common/headerView/HeaderView";
@@ -7,28 +8,23 @@ import { deleteToken, getUserId } from "@/utils/auth";
 import { HStack, Stack } from "@chakra-ui/react";
 import _ from "lodash";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 /**
  *@description 게시글 리스트
  */
 function Posts() {
-  const [isLogin, setIsLogin] = useState(false);
-  const initData = {
-    title: "string",
-    contents: "",
-    createdAt: "20220202",
-    author: "test",
-    view: 0,
-    commentsCount: 0,
-    like: 0,
-  };
-  const tmps = _.range(0, 10);
+  // 스크롤 시, 옵저버가 감지하는 화면에 나오는 타겟 (화면 하단에 위치)
+  const observerTargetRef = useRef(null);
   const router = useRouter();
 
-  const datas = tmps.map((item) => initData);
-
+  const [isLogin, setIsLogin] = useState(false);
   const [searchText, setSearchText] = useState("");
+
+  const { data, fetchNextPage, isFetchingNextPage, hasNextPage, refetch } =
+    useGetPosts({
+      search: searchText,
+    });
 
   const onLogin = () => router.push("/login");
 
@@ -36,6 +32,32 @@ function Posts() {
     deleteToken();
     setIsLogin(false);
   };
+
+  const handleObserver = (entries: IntersectionObserverEntry[]) => {
+    if (entries[0].isIntersecting && !hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  };
+
+  useEffect(() => {
+    console.log("aefewa");
+  }, [searchText]);
+
+  useEffect(() => {
+    const options = {
+      rootMargin: "100px",
+      threshold: 1.0,
+    };
+
+    const observer = new IntersectionObserver(handleObserver, options);
+    if (observerTargetRef.current) {
+      observer.observe(observerTargetRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [observerTargetRef]);
 
   useEffect(() => {
     const id = getUserId();
@@ -53,6 +75,7 @@ function Posts() {
       <HeaderView>
         <SearchInput
           placeholder="검색"
+          value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
         />
 
@@ -71,12 +94,18 @@ function Posts() {
 
       {/* 게시글 리스트 */}
       <Stack py="32px" spacing={"33px"}>
-        {datas.map((item, i) => (
+        {data?.pages.map((page, i) => (
           <React.Fragment key={i.toString()}>
-            <PostListItem {...item} />
+            {page.data.map((post) => (
+              <React.Fragment key={post.id.toString()}>
+                <PostListItem data={post} />
+              </React.Fragment>
+            ))}
           </React.Fragment>
         ))}
       </Stack>
+
+      <Stack ref={observerTargetRef} className="observer_target" />
     </Stack>
   );
 }

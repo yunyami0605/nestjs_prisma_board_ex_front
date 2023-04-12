@@ -1,18 +1,20 @@
 import { colors } from "@/theme/color";
-import { HStack, Stack, Text } from "@chakra-ui/react";
-import React, { useState } from "react";
+import { PostItem } from "@/types/page/posts";
+import { getProgressTime } from "@/utils/time";
+import { Flex, HStack, Stack, Text } from "@chakra-ui/react";
+import { useRouter } from "next/router";
+import React from "react";
 
 interface Props {
-  title: string;
-  contents: string;
-  createdAt: string;
-  author: string;
-  view: number;
-  commentsCount: number;
-  like: number;
+  data: PostItem;
 }
 
-function PostListItem(props: Props) {
+/**
+ *@description 게시글 리스트 페이지 > 게시글 항목
+ */
+function PostListItem({ data }: Props) {
+  const router = useRouter();
+
   return (
     <Stack
       px="12px"
@@ -21,29 +23,31 @@ function PostListItem(props: Props) {
       borderTopWidth={"1px"}
       borderBottomWidth={"1px"}
       borderColor={colors.gray[3]}
+      cursor="pointer"
+      onClick={() => router.push(`/posts/${data.id}`)}
     >
       <Text fontWeight={"bold"} fontSize="16px">
-        {props.title}
+        {data.title}
       </Text>
 
-      <Text fontSize="12px">{props.contents}</Text>
+      <Text fontSize="12px">{data.content}</Text>
 
       <HStack justifyContent={"space-between"}>
-        <Text>{props.createdAt}</Text>
+        <Text>{getProgressTime(data.createdAt)}</Text>
 
-        <HStack>
-          <Text mr="2px">작성자</Text>
-          <Text mr="14px">{props.author}</Text>
+        <Flex>
+          <Text mr="6px">작성자</Text>
+          <Text mr="20px">{data.author.nickname}</Text>
 
-          <Text mr="8px">뷰</Text>
-          <Text mr="14px">{props.view}</Text>
+          <Text mr="6px">뷰</Text>
+          <Text mr="20px">{data.view}</Text>
 
-          <Text mr="8px">댓글</Text>
-          <Text mr="14px">{props.commentsCount}</Text>
+          <Text mr="6px">댓글</Text>
+          <Text mr="20px">{data._count.comments}</Text>
 
-          <Text mr="8px">좋아요</Text>
-          <Text mr="14px">{props.like}</Text>
-        </HStack>
+          <Text mr="6px">좋아요</Text>
+          <Text>{data.like}</Text>
+        </Flex>
       </HStack>
     </Stack>
   );

@@ -16,7 +16,7 @@ function SearchInput(props: InputProps) {
       w="180px"
       h="35px"
       _placeholder={{ color: colors.gray[3] }}
-      color={colors.gray[5]}
+      color={colors.gray[0]}
     />
   );
 }
