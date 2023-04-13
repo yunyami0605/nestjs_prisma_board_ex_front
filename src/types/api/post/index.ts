@@ -19,3 +19,18 @@ export interface GetPostsResponse {
     nickname: string;
   };
 }
+
+export interface GetPostResponse {
+  author: { email: string; name: string };
+  email: string;
+  name: string;
+  authorId: number;
+  content: string;
+  createdAt: string;
+  deletedAt: null;
+  id: number;
+  like: number;
+  title: string;
+  updatedAt: string;
+  view: number;
+}

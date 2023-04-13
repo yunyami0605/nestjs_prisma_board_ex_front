@@ -1,8 +1,27 @@
-import { useInfiniteQuery } from "react-query";
+import { useInfiniteQuery, useQuery } from "react-query";
 import { apiCall } from "../common";
 import queryString from "query-string";
 import QueryKeys from "@/constants/queryKeys";
-import { GetPostsQuery, GetPostsResponse } from "@/types/api/post";
+import {
+  GetPostResponse,
+  GetPostsQuery,
+  GetPostsResponse,
+} from "@/types/api/post";
+
+const getPost = (id: string) => {
+  return apiCall<GetPostResponse>({
+    method: "GET",
+    url: `post/${id}`,
+  });
+};
+
+export const useGetPost = (id?: string) => {
+  return useQuery([QueryKeys.post.getPost], () => {
+    if (!id) return;
+
+    return getPost(id);
+  });
+};
 
 const getPosts = (query: GetPostsQuery) => {
   const _query = queryString.stringify(query);
@@ -25,7 +44,7 @@ export const useGetPosts = (query: GetPostsQuery) => {
       return getPosts(param.pageParam ?? initQuery);
     },
     {
-      getNextPageParam: (lastPage, allPages) => {
+      getNextPageParam: (lastPage) => {
         const lastDataLength = lastPage.data.length;
         return {
           search: query.search,
