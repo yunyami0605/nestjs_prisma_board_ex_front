@@ -4,18 +4,12 @@ import DefaultProfile from "../common/profile/DefaultProfile";
 import LikeButton from "../common/button/LikeButton";
 import TextButton from "../common/button/TextButton";
 import { colors } from "@/theme/color";
-import { CommentType } from "@/types/page/posts";
+import { CommentItem, CommentType } from "@/types/page/posts";
 import { getProgressTime } from "@/utils/time";
 
 interface Props {
   commentType: CommentType;
-  data: {
-    nickname: string;
-    createdAt: string;
-    like: number;
-    contents: string;
-    commentType: CommentType;
-  };
+  data: CommentItem;
 }
 function PostComment({ commentType, data }: Props) {
   return (
@@ -35,11 +29,11 @@ function PostComment({ commentType, data }: Props) {
         <Stack spacing="20px">
           <Flex alignItems={"center"} justifyContent={"space-between"}>
             <HStack alignItems={"center"} spacing="18px">
-              <DefaultProfile name={data.nickname} />
+              <DefaultProfile name={data.user.nickname.slice(0, 4)} />
 
               <Stack spacing={"2px"}>
                 <Text fontSize={"16px"} fontWeight={"bold"}>
-                  {data.nickname}
+                  {data.user.nickname}
                 </Text>
 
                 <Text fontSize={"12px"}>
@@ -53,7 +47,7 @@ function PostComment({ commentType, data }: Props) {
           </Flex>
 
           <Text minH="90px">
-            {commentType === "DELETE" ? "삭제된 댓글입니다." : data.contents}
+            {commentType === "DELETE" ? "삭제된 댓글입니다." : data.content}
           </Text>
         </Stack>
 

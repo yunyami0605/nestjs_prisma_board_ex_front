@@ -12,6 +12,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 /**
  *@description 게시글 리스트
+ *@todo 게시글 검색 debounce 로직 추가하기
  */
 function Posts() {
   // 스크롤 시, 옵저버가 감지하는 화면에 나오는 타겟 (화면 하단에 위치)

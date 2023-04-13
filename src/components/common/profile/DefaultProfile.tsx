@@ -12,7 +12,7 @@ interface Props {
 function DefaultProfile({ name }: Props) {
   return (
     <Center w="39px" h="39px" borderRadius={"50px"} bgColor={colors.gray[3]}>
-      <Text fontSize={"16px"} fontWeight={"bold"} color={colors.gray[5]}>
+      <Text fontSize={"10px"} fontWeight={"bold"} color={colors.gray[5]}>
         {name}
       </Text>
     </Center>
