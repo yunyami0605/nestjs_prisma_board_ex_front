@@ -8,3 +8,19 @@ export type PostItem = GetPostsResponse;
 export type PostContent = GetPostResponse;
 
 export type CommentItem = GetCommentsResponse;
+
+export type SelectedComment = {
+  type: CommentType;
+  id: number;
+  content?: string;
+  parentId?: number;
+  parentUserNickname?: string;
+};
+
+export type CommentMutationType =
+  | "DEFAULT"
+  | "ADD_RECOMMENT"
+  | "UPDATE_COMMENT"
+  | "UPDATE_RECOMMENT"
+  | "DELETE_COMMENT"
+  | "DELETE_RECOMMENT";
