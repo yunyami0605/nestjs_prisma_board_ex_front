@@ -4,14 +4,55 @@ import DefaultProfile from "../common/profile/DefaultProfile";
 import LikeButton from "../common/button/LikeButton";
 import TextButton from "../common/button/TextButton";
 import { colors } from "@/theme/color";
-import { CommentItem, CommentType } from "@/types/page/posts";
+import {
+  CommentItem,
+  CommentMutationType,
+  CommentType,
+  SelectedComment,
+} from "@/types/page/posts";
 import { getProgressTime } from "@/utils/time";
+import { SetState } from "@/types/common";
+import _ from "lodash";
 
 interface Props {
   commentType: CommentType;
   data: CommentItem;
+  setSelectedComment: SetState<SelectedComment | null>;
+  setCommentMutationType: SetState<CommentMutationType>;
+  onInputFocus: () => void;
 }
-function PostComment({ commentType, data }: Props) {
+function PostComment({
+  commentType,
+  data,
+  setSelectedComment,
+  setCommentMutationType,
+  onInputFocus,
+}: Props) {
+  const onAddRecomment = () => {
+    setSelectedComment({
+      type: commentType,
+      id: data.id,
+      parentUserNickname: data.user.nickname,
+    });
+    setCommentMutationType("ADD_RECOMMENT");
+    onInputFocus();
+  };
+
+  const onModifyComment = () => {
+    setSelectedComment({ type: commentType, id: data.id, content: "" });
+    setCommentMutationType(
+      commentType === "COMMENT" ? "UPDATE_COMMENT" : "UPDATE_RECOMMENT"
+    );
+    onInputFocus();
+  };
+
+  const onDeleteComment = () => {
+    setSelectedComment({ type: commentType, id: data.id });
+    setCommentMutationType(
+      commentType === "COMMENT" ? "DELETE_COMMENT" : "DELETE_RECOMMENT"
+    );
+  };
+
   return (
     <HStack spacing={"58px"} w="100%">
       {commentType === "RECOMMENT" && (
@@ -53,9 +94,9 @@ function PostComment({ commentType, data }: Props) {
 
         {commentType !== "DELETE" && (
           <HStack spacing={"14px"}>
-            <TextButton>답글 쓰기</TextButton>
-            <TextButton>수정</TextButton>
-            <TextButton>삭제</TextButton>
+            <TextButton onClick={onAddRecomment}>답글 쓰기</TextButton>
+            <TextButton onClick={onModifyComment}>수정</TextButton>
+            <TextButton onClick={onDeleteComment}>삭제</TextButton>
           </HStack>
         )}
       </Stack>
