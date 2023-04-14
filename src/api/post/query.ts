@@ -7,6 +7,7 @@ import {
   GetPostsQuery,
   GetPostsResponse,
 } from "@/types/api/post";
+import _ from "lodash";
 
 const getPost = (id: string) => {
   return apiCall<GetPostResponse>({
@@ -15,12 +16,21 @@ const getPost = (id: string) => {
   });
 };
 
+/**
+ *@description 게시글 조회 api hook
+ */
 export const useGetPost = (id?: string) => {
-  return useQuery([QueryKeys.post.getPost], () => {
-    if (!id) return;
+  return useQuery(
+    [QueryKeys.post.getPost, id],
+    (param) => {
+      const postId = param.queryKey[1] as string;
 
-    return getPost(id);
-  });
+      return getPost(postId);
+    },
+    {
+      enabled: !_.isEmpty(id),
+    }
+  );
 };
 
 const getPosts = (query: GetPostsQuery) => {
