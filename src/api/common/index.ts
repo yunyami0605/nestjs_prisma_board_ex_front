@@ -13,8 +13,13 @@ const axiosInstance = axios.create();
 export const apiCall = async <ResponseType = any>(
   props: AxiosRequestConfig
 ) => {
-  const accessToken = getCookie("access");
-  const refreshToken = getCookie("refresh");
+  const accessToken = process.env.NEXT_PUBLIC_ACCESS_TOKEN_NAME
+    ? getCookie(process.env.NEXT_PUBLIC_ACCESS_TOKEN_NAME)
+    : "";
+
+  const refreshToken = process.env.NEXT_PUBLIC_REFRESH_TOKEN_NAME
+    ? getCookie(process.env.NEXT_PUBLIC_REFRESH_TOKEN_NAME)
+    : "";
 
   return axiosInstance({
     ...props,
