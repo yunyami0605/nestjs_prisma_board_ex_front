@@ -14,27 +14,27 @@ const getComments = (query: GetCommentQuery) => {
   });
 };
 
-export const useGetComments = (query: GetCommentQuery) => {
+export const useGetComments = (postId: string) => {
   return useInfiniteQuery(
-    [QueryKeys.comment.getComments, query],
-    (param) => {
-      const _query = param.queryKey[1] as GetCommentQuery;
-      return getComments(_query);
+    [QueryKeys.comment.getComments, postId],
+    ({ pageParam, queryKey }) => {
+      const _query = queryKey[1] as string;
+
+      return getComments({
+        cursorId: pageParam,
+        postId: _query,
+      });
     },
     {
       getNextPageParam: (lastPage) => {
         const lastDataLength = lastPage.data.length;
 
-        return {
-          cursorId:
-            lastDataLength === 0
-              ? undefined
-              : lastPage.data[lastDataLength - 1].id,
-          postId: query.postId,
-        };
+        return lastDataLength === 4
+          ? lastPage.data[lastDataLength - 1].id
+          : undefined;
       },
-      keepPreviousData: true,
-      enabled: !_.isEmpty(query.postId),
+
+      enabled: !_.isEmpty(postId),
     }
   );
 };

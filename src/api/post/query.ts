@@ -56,13 +56,12 @@ export const useGetPosts = (query: GetPostsQuery) => {
     {
       getNextPageParam: (lastPage) => {
         const lastDataLength = lastPage.data.length;
-        return {
-          search: query.search,
-          id:
-            lastDataLength === 0
-              ? undefined
-              : lastPage.data[lastDataLength - 1].id,
-        };
+        return lastDataLength < 8
+          ? undefined
+          : {
+              search: query.search,
+              id: lastPage.data[lastDataLength - 1].id,
+            };
       },
       keepPreviousData: true,
     }

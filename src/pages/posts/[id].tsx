@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
-import { Box, Flex, HStack, Stack, Text, Textarea } from "@chakra-ui/react";
+import { Flex, HStack, Stack, Text, Textarea } from "@chakra-ui/react";
 import HeaderView from "@/components/common/headerView/HeaderView";
 import TextButton from "@/components/common/button/TextButton";
 import DefaultPropfile from "@/components/common/profile/DefaultProfile";
@@ -20,6 +20,7 @@ import {
 import useToastShow from "@/hooks/useToast";
 import { useGetComments } from "@/api/comment/query";
 import { CommentMutationType, SelectedComment } from "@/types/page/posts";
+import { usePostRecomment } from "@/api/recomment/mutation";
 
 /**
  *@description 게시글 내용 페이지
@@ -47,6 +48,7 @@ function PostContent() {
   const postCommnet = usePostComment();
   const patchComment = usePatchComment();
   const deleteComment = useDeleteComment();
+  const postRecomment = usePostRecomment();
 
   const {
     data: commentsData,
@@ -54,17 +56,16 @@ function PostContent() {
     hasNextPage,
     isFetchingNextPage,
     refetch,
-  } = useGetComments({
-    postId: query.id,
-  });
+  } = useGetComments(query.id);
 
   const tags = ["IOS", "IOS", "IOS"];
 
-  const onPostComment = () => {
+  const onAddComment = () => {
+    if (_.isEmpty(commentInputText)) return toastShow("글자를 입력해주세요.");
+
     postCommnet
       .mutateAsync({ postId: query.id, content: commentInputText })
       .then((response) => {
-        console.log(response);
         toastShow("댓글이 등록되었습니다.");
         setCommentInputText("");
         refetch();
@@ -74,23 +75,78 @@ function PostContent() {
       });
   };
 
-  const onPatchComment = () => {
-    patchComment
-      .mutateAsync({ commentId: query.id, content: commentInputText })
-      .then((response) => {
-        toastShow("댓글이 수정되었습니다.");
-        setCommentInputText("");
-        refetch();
-      })
-      .catch((error) => {
-        toastShow("댓글 수정 과정에서 오류가 발생했습니다.");
-      });
+  const onAddRecomment = () => {
+    if (_.isEmpty(commentInputText)) return toastShow("글자를 입력해주세요.");
+
+    if (selectedComment && commentMutationType === "ADD_RECOMMENT") {
+      const data = {
+        content: commentInputText,
+        commentId: selectedComment?.id,
+      };
+      postRecomment
+        .mutateAsync(data)
+        .then((response) => {
+          if (response.statusCode === 201) {
+            toastShow("답글이 등록되었습니다.");
+            setCommentInputText("");
+            setSelectedComment(null);
+            setCommentMutationType("DEFAULT");
+            refetch();
+          }
+        })
+        .catch((error) => {
+          toastShow("답글 등록 과정에서 오류가 발생했습니다.");
+        });
+    }
+  };
+
+  const onUpdateComment = () => {
+    if (selectedComment) {
+      patchComment
+        .mutateAsync({
+          commentId: selectedComment?.id,
+          content: selectedComment?.content ?? "",
+        })
+        .then((response) => {
+          if (response.statusCode === 200) {
+            toastShow("댓글이 수정되었습니다.");
+            setSelectedComment(null);
+            setCommentMutationType("DEFAULT");
+            refetch();
+          }
+        })
+        .catch((error) => {
+          toastShow("댓글 수정 과정에서 오류가 발생했습니다.");
+        });
+    }
   };
 
   const onDeleteComment = () => {
-    //
-    // deleteComment
-    // .mutateAsync()
+    if (selectedComment?.id) {
+      deleteComment
+        .mutateAsync(selectedComment?.id)
+        .then((response) => {
+          if (response.statusCode === 201) {
+            toastShow("댓글이 삭제되었습니다.");
+            setSelectedComment(null);
+            setCommentMutationType("DEFAULT");
+            refetch();
+          }
+        })
+        .catch((error) => {
+          toastShow("댓글 삭제 과정에서 오류가 발생했습니다.");
+        });
+    }
+  };
+
+  /**
+   *@description 댓글 crud에 따른 분기처리 함수
+   */
+  const onMutationComment = () => {
+    if (commentMutationType === "DEFAULT") onAddComment();
+    else if (commentMutationType === "ADD_RECOMMENT") onAddRecomment();
+    else if (commentMutationType === "UPDATE_COMMENT") onUpdateComment();
+    else if (commentMutationType === "DELETE_COMMENT") onDeleteComment();
   };
 
   const onInputFocus = () => {
@@ -98,14 +154,13 @@ function PostContent() {
   };
 
   const handleObserver = (entries: IntersectionObserverEntry[]) => {
-    if (entries[0].isIntersecting && !hasNextPage && !isFetchingNextPage) {
+    if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.keyCode === 8) {
-      console.log("Backspace key pressed");
       if (
         commentInputText.length === 0 &&
         (commentMutationType === "ADD_RECOMMENT" ||
@@ -118,8 +173,12 @@ function PostContent() {
   };
 
   useEffect(() => {
+    if (commentMutationType !== "DEFAULT") onMutationComment();
+  }, [commentMutationType]);
+
+  useEffect(() => {
     const options = {
-      rootMargin: "100px",
+      rootMargin: "40px",
       threshold: 1.0,
     };
 
@@ -131,7 +190,7 @@ function PostContent() {
     return () => {
       observer.disconnect();
     };
-  }, [observerTargetRef]);
+  }, [observerTargetRef, commentsData]);
 
   useEffect(() => {
     if (
@@ -139,8 +198,8 @@ function PostContent() {
       (commentMutationType === "ADD_RECOMMENT" ||
         commentMutationType === "UPDATE_RECOMMENT")
     ) {
+      // 답글 등록 부분에서 답글 타겟 닉네임 표시해야할 영역 width 설정
       if (parentNicknameRef.current) {
-        console.log(parentNicknameRef.current?.offsetWidth);
         setParentNicknameWidth(parentNicknameRef.current?.offsetWidth);
       }
     } else {
@@ -257,22 +316,36 @@ function PostContent() {
       </Flex>
 
       <Flex justifyContent={"flex-end"} pt="22px">
-        <PositiveButtonBar name={"댓글 작성"} onClick={onPostComment} />
+        <PositiveButtonBar name={"댓글 작성"} onClick={onMutationComment} />
       </Flex>
 
       {/* 댓글 리스트 */}
       <Stack>
         {commentsData?.pages.map((page, i) => (
           <React.Fragment key={i.toString()}>
-            {page.data.map((item) => (
-              <React.Fragment key={item.id}>
+            {page.data.map((commentItem) => (
+              <React.Fragment key={commentItem.id}>
                 <PostComment
                   setSelectedComment={setSelectedComment}
                   setCommentMutationType={setCommentMutationType}
                   onInputFocus={onInputFocus}
-                  data={item}
-                  commentType={item.deletedAt ? "DELETE" : "COMMENT"}
+                  data={commentItem}
+                  commentType={commentItem.deletedAt ? "DELETE" : "COMMENT"}
                 />
+
+                {commentItem.recomments.map((recommentItem) => (
+                  <React.Fragment key={recommentItem.id}>
+                    <PostComment
+                      setSelectedComment={setSelectedComment}
+                      setCommentMutationType={setCommentMutationType}
+                      onInputFocus={onInputFocus}
+                      data={recommentItem}
+                      commentType={
+                        recommentItem.deletedAt ? "DELETE" : "RECOMMENT"
+                      }
+                    />
+                  </React.Fragment>
+                ))}
               </React.Fragment>
             ))}
           </React.Fragment>

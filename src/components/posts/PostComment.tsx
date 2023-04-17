@@ -1,11 +1,10 @@
-import { Flex, HStack, Stack, Text } from "@chakra-ui/react";
+import { Flex, HStack, Stack, Text, Textarea } from "@chakra-ui/react";
 import React, { useState } from "react";
 import DefaultProfile from "../common/profile/DefaultProfile";
 import LikeButton from "../common/button/LikeButton";
 import TextButton from "../common/button/TextButton";
 import { colors } from "@/theme/color";
 import {
-  CommentItem,
   CommentMutationType,
   CommentType,
   SelectedComment,
@@ -13,6 +12,16 @@ import {
 import { getProgressTime } from "@/utils/time";
 import { SetState } from "@/types/common";
 import _ from "lodash";
+import useToastShow from "@/hooks/useToast";
+
+type CommentItem = {
+  id: number;
+  user: {
+    nickname: string;
+  };
+  createdAt: string;
+  content: string;
+};
 
 interface Props {
   commentType: CommentType;
@@ -28,6 +37,11 @@ function PostComment({
   setCommentMutationType,
   onInputFocus,
 }: Props) {
+  const { toastShow } = useToastShow();
+
+  const [modifiedContent, setModifiedContent] = useState(data.content);
+  const [isModifyStatus, setModifyStatus] = useState(false);
+
   const onAddRecomment = () => {
     setSelectedComment({
       type: commentType,
@@ -39,11 +53,21 @@ function PostComment({
   };
 
   const onModifyComment = () => {
-    setSelectedComment({ type: commentType, id: data.id, content: "" });
+    setModifyStatus(true);
+  };
+
+  const onModifyCommentComplete = () => {
+    if (_.isEmpty(modifiedContent)) return toastShow("글자를 입력해주세요.");
+
+    setSelectedComment({
+      type: commentType,
+      id: data.id,
+      content: modifiedContent,
+    });
     setCommentMutationType(
       commentType === "COMMENT" ? "UPDATE_COMMENT" : "UPDATE_RECOMMENT"
     );
-    onInputFocus();
+    setModifyStatus(false);
   };
 
   const onDeleteComment = () => {
@@ -67,7 +91,7 @@ function PostComment({
         borderTopWidth={"1px"}
         borderTopColor={colors.gray[3]}
       >
-        <Stack spacing="20px">
+        <Stack spacing="20px" mb="4px">
           <Flex alignItems={"center"} justifyContent={"space-between"}>
             <HStack alignItems={"center"} spacing="18px">
               <DefaultProfile name={data.user.nickname.slice(0, 4)} />
@@ -77,9 +101,7 @@ function PostComment({
                   {data.user.nickname}
                 </Text>
 
-                <Text fontSize={"12px"}>
-                  {getProgressTime(data.createdAt)}일전
-                </Text>
+                <Text fontSize={"12px"}>{getProgressTime(data.createdAt)}</Text>
               </Stack>
             </HStack>
 
@@ -87,16 +109,37 @@ function PostComment({
             <LikeButton onChange={() => {}} />
           </Flex>
 
-          <Text minH="90px">
-            {commentType === "DELETE" ? "삭제된 댓글입니다." : data.content}
-          </Text>
+          {isModifyStatus && commentType !== "DELETE" ? (
+            <Textarea
+              value={modifiedContent}
+              onChange={(e) => setModifiedContent(e.target.value)}
+              resize="none"
+            />
+          ) : (
+            <Text
+              minH="90px"
+              color={colors.gray[commentType === "DELETE" ? 2 : 0]}
+              fontWeight={"500"}
+            >
+              {commentType === "DELETE" ? "삭제된 댓글입니다." : data.content}
+            </Text>
+          )}
         </Stack>
 
         {commentType !== "DELETE" && (
-          <HStack spacing={"14px"}>
-            <TextButton onClick={onAddRecomment}>답글 쓰기</TextButton>
-            <TextButton onClick={onModifyComment}>수정</TextButton>
-            <TextButton onClick={onDeleteComment}>삭제</TextButton>
+          <HStack spacing={"14px"} pl="2px">
+            {!isModifyStatus && (
+              <TextButton onClick={onAddRecomment}>답글 쓰기</TextButton>
+            )}
+            {!isModifyStatus && (
+              <TextButton onClick={onModifyComment}>수정</TextButton>
+            )}
+            {!isModifyStatus && (
+              <TextButton onClick={onDeleteComment}>삭제</TextButton>
+            )}
+            {isModifyStatus && (
+              <TextButton onClick={onModifyCommentComplete}>완료</TextButton>
+            )}
           </HStack>
         )}
       </Stack>

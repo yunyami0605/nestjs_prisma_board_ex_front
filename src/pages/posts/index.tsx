@@ -22,10 +22,9 @@ function Posts() {
   const [isLogin, setIsLogin] = useState(false);
   const [searchText, setSearchText] = useState("");
 
-  const { data, fetchNextPage, isFetchingNextPage, hasNextPage, refetch } =
-    useGetPosts({
-      search: searchText,
-    });
+  const { data, fetchNextPage, isFetchingNextPage, hasNextPage } = useGetPosts({
+    search: searchText,
+  });
 
   const onLogin = () => router.push("/login");
 
@@ -35,14 +34,10 @@ function Posts() {
   };
 
   const handleObserver = (entries: IntersectionObserverEntry[]) => {
-    if (entries[0].isIntersecting && !hasNextPage && !isFetchingNextPage) {
+    if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
   };
-
-  useEffect(() => {
-    console.log("aefewa");
-  }, [searchText]);
 
   useEffect(() => {
     const options = {
@@ -58,7 +53,7 @@ function Posts() {
     return () => {
       observer.disconnect();
     };
-  }, [observerTargetRef]);
+  }, [observerTargetRef, data]);
 
   useEffect(() => {
     const id = getUserId();

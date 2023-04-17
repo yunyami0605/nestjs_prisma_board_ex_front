@@ -17,7 +17,7 @@ export interface MutationCommentResponse {
  *@description 댓글 수정 api 훅 파라미터
  */
 export interface PatchCommentData {
-  commentId: string;
+  commentId: number;
   content: string;
 }
 
@@ -26,24 +26,39 @@ export interface PatchCommentData {
  */
 export interface GetCommentQuery {
   postId: string;
-  cursorId?: string;
+  cursorId?: number;
 }
 
 /**
  *@description 댓글 리스트 조회 api 응답
  */
 export interface GetCommentsResponse {
-  content: string;
-  createdAt: string;
-  deletedAt: null;
   id: number;
-  like: number;
   postId: number;
-  recomments: any[];
-  thank: number;
-  updatedAt: string;
   userId: number;
+  content: string;
+  like: number;
+  thank: number;
+  recomments: Recomment[];
   user: {
     nickname: string;
   };
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: null;
+}
+
+export interface Recomment {
+  id: number;
+  userId: number;
+  commentId: number;
+  content: string;
+  thank: number;
+  like: number;
+  user: {
+    nickname: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
 }
