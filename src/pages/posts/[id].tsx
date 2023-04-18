@@ -33,7 +33,6 @@ import { usePostLike } from "@/api/post/mutation";
 
 /**
  *@description 게시글 내용 페이지
- *@todo 좋아요, 답글
  */
 function PostContent() {
   const router = useRouter();
@@ -242,7 +241,7 @@ function PostContent() {
    *@description 답글 등록 중, 백스페이스 처리 함수 (타겟 닉네임을 지우기 위함)
    */
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.keyCode === 8) {
+    if (event.key === "Enter") {
       if (
         commentInputText.length === 0 &&
         commentMutationType === "ADD_RECOMMENT"
@@ -391,7 +390,7 @@ function PostContent() {
           py="22px"
           h="111px"
           onChange={(e) => setCommentInputText(e.target.value)}
-          onKeyDown={handleKeyDown}
+          onKeyPress={handleKeyDown}
           value={commentInputText}
           _placeholder={{
             color: colors.gray[2],
@@ -401,7 +400,7 @@ function PostContent() {
         />
       </Flex>
 
-      <Flex justifyContent={"flex-end"} pt="22px">
+      <Flex justifyContent={"flex-end"} pt="8px" pb="18px">
         <PositiveButtonBar name={"댓글 작성"} onClick={onMutationComment} />
       </Flex>
 

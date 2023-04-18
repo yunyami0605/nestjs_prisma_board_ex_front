@@ -11,6 +11,7 @@ import { EMAIL_REGREX } from "@/constants/reqexp";
 
 /**
  *@description 회원가입 페이지
+ *@todo 회원가입 에러 로직 추가
  */
 function Signup() {
   const router = useRouter();

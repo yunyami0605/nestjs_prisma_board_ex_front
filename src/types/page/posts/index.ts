@@ -28,3 +28,9 @@ export type CommentMutationType =
   | "UPDATE_RECOMMENT"
   | "DELETE_COMMENT"
   | "DELETE_RECOMMENT";
+
+export type PostForm = {
+  title: string;
+  content: string;
+  tags: string[];
+};

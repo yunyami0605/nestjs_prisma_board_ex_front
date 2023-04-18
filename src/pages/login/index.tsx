@@ -8,6 +8,10 @@ import { Center, Box, Stack } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 
+/**
+ *@description 로그인 페이지
+ *@todo 로그인 에러 로직 추가
+ */
 function Login() {
   const postLogin = usePostLogin();
   const router = useRouter();
