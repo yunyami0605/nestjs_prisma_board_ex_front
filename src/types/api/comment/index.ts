@@ -7,13 +7,6 @@ export interface PostCommentData {
 }
 
 /**
- *@description 등록, 수정, 삭제 댓글 응답
- */
-export interface MutationCommentResponse {
-  id: number;
-}
-
-/**
  *@description 댓글 수정 api 훅 파라미터
  */
 export interface PatchCommentData {
@@ -46,7 +39,12 @@ export interface GetCommentsResponse {
   createdAt: string;
   updatedAt: string;
   deletedAt: null;
+  commentLikeJoin: CommentLikeJoin[];
 }
+
+export type CommentLikeJoin = {
+  id: number;
+};
 
 export interface Recomment {
   id: number;
@@ -61,4 +59,5 @@ export interface Recomment {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
+  recommentLikeJoin: CommentLikeJoin[];
 }

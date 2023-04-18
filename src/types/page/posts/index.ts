@@ -19,6 +19,8 @@ export type SelectedComment = {
   parentUserNickname?: string;
 };
 
+export type LikeType = "LIKE" | "DISLIKE";
+
 export type CommentMutationType =
   | "DEFAULT"
   | "ADD_RECOMMENT"

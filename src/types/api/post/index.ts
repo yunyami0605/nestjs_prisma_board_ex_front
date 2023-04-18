@@ -1,3 +1,5 @@
+import { LikeType } from "@/types/page/posts";
+
 export interface GetPostsQuery {
   id?: string;
   search?: string;
@@ -33,4 +35,10 @@ export interface GetPostResponse {
   title: string;
   updatedAt: string;
   view: number;
+  postLikeJoin: {
+    id: number;
+    createdAt: string;
+    postId: number;
+    userId: number;
+  }[];
 }
