@@ -13,6 +13,7 @@ import { colors } from "@/theme/color";
 import { usePostPost } from "@/api/post/mutation";
 import { PostForm } from "@/types/page/posts";
 import useToastShow from "@/hooks/useToast";
+import useGetUserId from "@/hooks/useGetUserId";
 
 /**
  *@description 게시글 등록 페이지
@@ -21,6 +22,7 @@ function PostRegister() {
   const router = useRouter();
   const postPost = usePostPost();
   const { toastShow } = useToastShow();
+  const userId = useGetUserId();
 
   const initForm: PostForm = {
     title: "",
@@ -32,6 +34,11 @@ function PostRegister() {
   const [tag, setTag] = useState("");
 
   const onSubmit = () => {
+    if (!userId) {
+      alert("로그인하시고 등록해주세요.");
+      return router.replace("/login");
+    }
+
     postPost
       .mutateAsync(form)
       .then((response) => {

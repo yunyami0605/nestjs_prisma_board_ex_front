@@ -4,6 +4,7 @@ import PositiveButtonBar from "@/components/common/button/PositiveButtonBar";
 import HeaderView from "@/components/common/headerView/HeaderView";
 import SearchInput from "@/components/common/input/SearchInput";
 import PostListItem from "@/components/posts/PostListItem";
+import useGetUserId from "@/hooks/useGetUserId";
 import { deleteToken, getUserId } from "@/utils/auth";
 import { HStack, Stack } from "@chakra-ui/react";
 import _ from "lodash";
@@ -21,6 +22,7 @@ function Posts() {
 
   const [isLogin, setIsLogin] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const userId = useGetUserId();
 
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } = useGetPosts({
     search: searchText,
@@ -37,6 +39,15 @@ function Posts() {
     if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
+  };
+
+  const onMoveRegisterPost = () => {
+    if (!userId) {
+      alert("로그인하시고 등록해주세요.");
+      return router.replace("/login");
+    }
+
+    router.push("/posts/register");
   };
 
   useEffect(() => {
@@ -76,10 +87,7 @@ function Posts() {
         />
 
         <HStack spacing={"18px"}>
-          <PositiveButtonBar
-            name="글 작성"
-            onClick={() => router.push("/posts/register")}
-          />
+          <PositiveButtonBar name="글 작성" onClick={onMoveRegisterPost} />
 
           <DefaultButtonBar
             name={isLogin ? "로그아웃" : "로그인"}
