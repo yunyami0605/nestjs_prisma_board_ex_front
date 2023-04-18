@@ -19,12 +19,17 @@ import {
 } from "@/api/comment/mutation";
 import useToastShow from "@/hooks/useToast";
 import { useGetComments } from "@/api/comment/query";
-import { CommentMutationType, SelectedComment } from "@/types/page/posts";
+import {
+  CommentMutationType,
+  LikeType,
+  SelectedComment,
+} from "@/types/page/posts";
 import {
   useDeleteRecomment,
   usePatchRecomment,
   usePostRecomment,
 } from "@/api/recomment/mutation";
+import { usePostLike } from "@/api/post/mutation";
 
 /**
  *@description 게시글 내용 페이지
@@ -55,6 +60,7 @@ function PostContent() {
   const postRecomment = usePostRecomment();
   const patchRecomment = usePatchRecomment();
   const deleteRecomment = useDeleteRecomment();
+  const postLike = usePostLike();
 
   const {
     data: commentsData,
@@ -215,6 +221,13 @@ function PostContent() {
     }
   };
 
+  const onPostLike = (likeType: LikeType) => {
+    postLike.mutateAsync({
+      id: query.id,
+      type: likeType,
+    });
+  };
+
   const onInputFocus = () => {
     if (commentInputRef.current) commentInputRef.current.focus();
   };
@@ -334,7 +347,12 @@ function PostContent() {
             ))}
           </HStack>
 
-          <LikeButton onChange={() => {}} />
+          {/* 좋아요, 싫어요 */}
+          <LikeButton
+            onChange={onPostLike}
+            currentIsLike={!_.isEmpty(postData?.data.postLikeJoin)}
+            likeCount={postData?.data.like}
+          />
         </Flex>
       </Flex>
 

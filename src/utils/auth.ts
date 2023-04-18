@@ -53,5 +53,5 @@ export const getUserId = () => {
   const userData = JSON.stringify(jwt.decode(userToken));
   const user = JSON.parse(userData) as { sub: number };
 
-  return user.sub;
+  return user?.sub;
 };

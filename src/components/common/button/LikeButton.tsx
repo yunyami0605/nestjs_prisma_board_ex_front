@@ -1,18 +1,37 @@
-import React, { useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { Flex, FlexboxProps, Text } from "@chakra-ui/react";
 import { colors } from "@/theme/color";
+import { LikeType } from "@/types/page/posts";
 
 interface Props {
   flexProps?: FlexboxProps;
-  onChange: () => void;
+  onChange: (likeType: LikeType) => void;
+  currentIsLike?: boolean;
+  likeCount?: number;
+  isLoading?: boolean;
+  isDelete?: boolean;
 }
-function LikeButton({ flexProps, onChange }: Props) {
+function LikeButton({
+  flexProps,
+  onChange,
+  currentIsLike,
+  likeCount,
+  isLoading,
+  isDelete,
+}: Props) {
   const [count, setCount] = useState(0);
 
   const onCountChange = (value: number) => {
+    const nextIsLike = value === 1;
+    if (isLoading || isDelete || nextIsLike === currentIsLike) return;
+
     setCount((prev) => prev + value);
-    onChange();
+    onChange(currentIsLike ? "DISLIKE" : "LIKE");
   };
+
+  useEffect(() => {
+    if (likeCount) setCount(likeCount);
+  }, [likeCount]);
 
   return (
     <Flex

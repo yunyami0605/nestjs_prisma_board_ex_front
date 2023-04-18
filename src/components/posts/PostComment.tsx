@@ -7,12 +7,15 @@ import { colors } from "@/theme/color";
 import {
   CommentMutationType,
   CommentType,
+  LikeType,
   SelectedComment,
 } from "@/types/page/posts";
 import { getProgressTime } from "@/utils/time";
 import { SetState } from "@/types/common";
-import _ from "lodash";
+import _, { toLower } from "lodash";
 import useToastShow from "@/hooks/useToast";
+import { useCommentLike } from "@/api/comment/mutation";
+import { CommentLikeJoin } from "@/types/api/comment";
 
 type CommentItem = {
   id: number;
@@ -21,6 +24,9 @@ type CommentItem = {
   };
   createdAt: string;
   content: string;
+  like: number;
+  commentLikeJoin?: CommentLikeJoin[];
+  recommentLikeJoin?: CommentLikeJoin[];
 };
 
 interface Props {
@@ -39,6 +45,7 @@ function PostComment({
   onInputFocus,
   isDelete,
 }: Props) {
+  const postLike = useCommentLike();
   const { toastShow } = useToastShow();
 
   const [modifiedContent, setModifiedContent] = useState(data.content);
@@ -84,6 +91,14 @@ function PostComment({
     );
   };
 
+  const onLike = (likeType: LikeType) => {
+    postLike.mutateAsync({
+      commentType: _.toLower(commentType) as "comment" | "recomment",
+      type: likeType,
+      id: data.id.toString(),
+    });
+  };
+
   return (
     <HStack spacing={"58px"} w="100%">
       {commentType === "RECOMMENT" && (
@@ -113,7 +128,19 @@ function PostComment({
             </HStack>
 
             {/* 좋아요 버튼 */}
-            <LikeButton onChange={() => {}} />
+            <LikeButton
+              onChange={onLike}
+              isLoading={postLike.isLoading}
+              isDelete={isDelete}
+              likeCount={data.like}
+              currentIsLike={
+                !_.isEmpty(
+                  commentType === "COMMENT"
+                    ? data.commentLikeJoin
+                    : data.recommentLikeJoin
+                )
+              }
+            />
           </Flex>
 
           {isModifyStatus && !isDelete ? (
