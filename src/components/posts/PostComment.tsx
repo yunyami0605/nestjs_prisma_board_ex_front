@@ -29,6 +29,7 @@ interface Props {
   setSelectedComment: SetState<SelectedComment | null>;
   setCommentMutationType: SetState<CommentMutationType>;
   onInputFocus: () => void;
+  isDelete: boolean;
 }
 function PostComment({
   commentType,
@@ -36,6 +37,7 @@ function PostComment({
   setSelectedComment,
   setCommentMutationType,
   onInputFocus,
+  isDelete,
 }: Props) {
   const { toastShow } = useToastShow();
 
@@ -54,6 +56,11 @@ function PostComment({
 
   const onModifyComment = () => {
     setModifyStatus(true);
+  };
+
+  const onModifyCommentCancel = () => {
+    setModifyStatus(false);
+    setModifiedContent(data.content);
   };
 
   const onModifyCommentComplete = () => {
@@ -109,7 +116,7 @@ function PostComment({
             <LikeButton onChange={() => {}} />
           </Flex>
 
-          {isModifyStatus && commentType !== "DELETE" ? (
+          {isModifyStatus && !isDelete ? (
             <Textarea
               value={modifiedContent}
               onChange={(e) => setModifiedContent(e.target.value)}
@@ -118,16 +125,16 @@ function PostComment({
           ) : (
             <Text
               minH="90px"
-              color={colors.gray[commentType === "DELETE" ? 2 : 0]}
+              color={colors.gray[isDelete ? 2 : 0]}
               fontWeight={"500"}
             >
-              {commentType === "DELETE" ? "삭제된 댓글입니다." : data.content}
+              {isDelete ? "삭제된 댓글입니다." : data.content}
             </Text>
           )}
         </Stack>
 
-        {commentType !== "DELETE" && (
-          <HStack spacing={"14px"} pl="2px">
+        {!isDelete && (
+          <HStack spacing={"20px"} pl="2px">
             {!isModifyStatus && (
               <TextButton onClick={onAddRecomment}>답글 쓰기</TextButton>
             )}
@@ -139,6 +146,9 @@ function PostComment({
             )}
             {isModifyStatus && (
               <TextButton onClick={onModifyCommentComplete}>완료</TextButton>
+            )}
+            {isModifyStatus && (
+              <TextButton onClick={onModifyCommentCancel}>취소</TextButton>
             )}
           </HStack>
         )}

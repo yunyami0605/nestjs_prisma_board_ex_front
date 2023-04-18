@@ -20,11 +20,15 @@ import {
 import useToastShow from "@/hooks/useToast";
 import { useGetComments } from "@/api/comment/query";
 import { CommentMutationType, SelectedComment } from "@/types/page/posts";
-import { usePostRecomment } from "@/api/recomment/mutation";
+import {
+  useDeleteRecomment,
+  usePatchRecomment,
+  usePostRecomment,
+} from "@/api/recomment/mutation";
 
 /**
  *@description 게시글 내용 페이지
- *@todo 태그, 좋아요, 답글, 수정, 삭제,
+ *@todo 좋아요, 답글
  */
 function PostContent() {
   const router = useRouter();
@@ -49,6 +53,8 @@ function PostContent() {
   const patchComment = usePatchComment();
   const deleteComment = useDeleteComment();
   const postRecomment = usePostRecomment();
+  const patchRecomment = usePatchRecomment();
+  const deleteRecomment = useDeleteRecomment();
 
   const {
     data: commentsData,
@@ -59,6 +65,45 @@ function PostContent() {
   } = useGetComments(query.id);
 
   const tags = ["IOS", "IOS", "IOS"];
+
+  const onUpdateRecomment = () => {
+    if (selectedComment) {
+      patchRecomment
+        .mutateAsync({
+          commentId: selectedComment?.id,
+          content: selectedComment?.content ?? "",
+        })
+        .then((response) => {
+          if (response.statusCode === 200) {
+            toastShow("답글이 수정되었습니다.");
+            setSelectedComment(null);
+            setCommentMutationType("DEFAULT");
+            refetch();
+          }
+        })
+        .catch((error) => {
+          toastShow("답글 수정 과정에서 오류가 발생했습니다.");
+        });
+    }
+  };
+
+  const onDeleteRecomment = () => {
+    if (selectedComment?.id) {
+      deleteRecomment
+        .mutateAsync(selectedComment?.id)
+        .then((response) => {
+          if (response.statusCode === 201) {
+            toastShow("답글이 삭제되었습니다.");
+            setSelectedComment(null);
+            setCommentMutationType("DEFAULT");
+            refetch();
+          }
+        })
+        .catch((error) => {
+          toastShow("답글 삭제 과정에서 오류가 발생했습니다.");
+        });
+    }
+  };
 
   const onAddComment = () => {
     if (_.isEmpty(commentInputText)) return toastShow("글자를 입력해주세요.");
@@ -143,10 +188,31 @@ function PostContent() {
    *@description 댓글 crud에 따른 분기처리 함수
    */
   const onMutationComment = () => {
-    if (commentMutationType === "DEFAULT") onAddComment();
-    else if (commentMutationType === "ADD_RECOMMENT") onAddRecomment();
-    else if (commentMutationType === "UPDATE_COMMENT") onUpdateComment();
-    else if (commentMutationType === "DELETE_COMMENT") onDeleteComment();
+    switch (commentMutationType) {
+      case "DEFAULT":
+        onAddComment();
+        break;
+
+      case "ADD_RECOMMENT":
+        onAddRecomment();
+        break;
+
+      case "UPDATE_COMMENT":
+        onUpdateComment();
+        break;
+
+      case "DELETE_COMMENT":
+        onDeleteComment();
+        break;
+
+      case "UPDATE_RECOMMENT":
+        onUpdateRecomment();
+        break;
+
+      case "DELETE_RECOMMENT":
+        onDeleteRecomment();
+        break;
+    }
   };
 
   const onInputFocus = () => {
@@ -159,12 +225,14 @@ function PostContent() {
     }
   };
 
+  /**
+   *@description 답글 등록 중, 백스페이스 처리 함수 (타겟 닉네임을 지우기 위함)
+   */
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.keyCode === 8) {
       if (
         commentInputText.length === 0 &&
-        (commentMutationType === "ADD_RECOMMENT" ||
-          commentMutationType === "UPDATE_RECOMMENT")
+        commentMutationType === "ADD_RECOMMENT"
       ) {
         setCommentMutationType("DEFAULT");
         setSelectedComment(null);
@@ -173,7 +241,11 @@ function PostContent() {
   };
 
   useEffect(() => {
-    if (commentMutationType !== "DEFAULT") onMutationComment();
+    if (
+      commentMutationType !== "DEFAULT" &&
+      commentMutationType !== "ADD_RECOMMENT"
+    )
+      onMutationComment();
   }, [commentMutationType]);
 
   useEffect(() => {
@@ -193,11 +265,7 @@ function PostContent() {
   }, [observerTargetRef, commentsData]);
 
   useEffect(() => {
-    if (
-      selectedComment &&
-      (commentMutationType === "ADD_RECOMMENT" ||
-        commentMutationType === "UPDATE_RECOMMENT")
-    ) {
+    if (selectedComment && commentMutationType === "ADD_RECOMMENT") {
       // 답글 등록 부분에서 답글 타겟 닉네임 표시해야할 영역 width 설정
       if (parentNicknameRef.current) {
         setParentNicknameWidth(parentNicknameRef.current?.offsetWidth);
@@ -330,7 +398,8 @@ function PostContent() {
                   setCommentMutationType={setCommentMutationType}
                   onInputFocus={onInputFocus}
                   data={commentItem}
-                  commentType={commentItem.deletedAt ? "DELETE" : "COMMENT"}
+                  commentType={"COMMENT"}
+                  isDelete={!_.isEmpty(commentItem.deletedAt)}
                 />
 
                 {commentItem.recomments.map((recommentItem) => (
@@ -340,9 +409,8 @@ function PostContent() {
                       setCommentMutationType={setCommentMutationType}
                       onInputFocus={onInputFocus}
                       data={recommentItem}
-                      commentType={
-                        recommentItem.deletedAt ? "DELETE" : "RECOMMENT"
-                      }
+                      commentType={"RECOMMENT"}
+                      isDelete={!_.isEmpty(recommentItem.deletedAt)}
                     />
                   </React.Fragment>
                 ))}
