@@ -29,10 +29,16 @@ import {
   usePatchRecomment,
   usePostRecomment,
 } from "@/api/recomment/mutation";
-import { usePostLike } from "@/api/post/mutation";
+import { useDeletePost, usePostLike } from "@/api/post/mutation";
+import useGetUserId from "@/hooks/useGetUserId";
 
 /**
  *@description 게시글 내용 페이지
+ *@todo 좋아요/싫어요 상태 확인 퍼블 추가
+ *@todo 게시글 수정, 삭제 추가
+ *@todo 배포
+ *@todo 싫어요에 대한 api 수정하기
+ *@todo redis 셋팅 및 연구
  */
 function PostContent() {
   const router = useRouter();
@@ -40,6 +46,7 @@ function PostContent() {
   const parentNicknameRef = useRef<HTMLParagraphElement>(null); // 답글 타겟 닉네임 text tag ref
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
   const { toastShow } = useToastShow();
+  const getUserId = useGetUserId();
 
   const [parentNicknameWidth, setParentNicknameWidth] = useState(0);
 
@@ -53,6 +60,7 @@ function PostContent() {
   const query = router.query as { id: string };
 
   const { data: postData } = useGetPost(query.id);
+  const deletePost = useDeletePost();
   const postCommnet = usePostComment();
   const patchComment = usePatchComment();
   const deleteComment = useDeleteComment();
@@ -252,6 +260,27 @@ function PostContent() {
     }
   };
 
+  const onModifyPost = () => {
+    if (!query?.id) return toastShow("잘못된 접근입니다.");
+    router.push(`/register/${query.id}`);
+  };
+
+  const onDeletePost = () => {
+    if (!query?.id) return toastShow("잘못된 접근입니다.");
+
+    deletePost
+      .mutateAsync({
+        postId: Number(query.id),
+      })
+      .then((response) => {
+        if (response.statusCode === 200)
+          toastShow("해당 게시글이 삭제 처리되었습니다.");
+      })
+      .catch((error) => {
+        toastShow("삭제 처리과정에서 에러가 발생했습니다.");
+      });
+  };
+
   useEffect(() => {
     if (
       commentMutationType !== "DEFAULT" &&
@@ -299,30 +328,44 @@ function PostContent() {
       <Flex py="32px" flexDir={"column"} justifyContent={"space-between"}>
         {/* 글쓴이 정보 */}
         <Stack>
-          <Flex alignItems={"center"} mb="47px">
-            <DefaultPropfile name={postData?.data.author.name ?? ""} />
+          <Flex mb="47px" justifyContent={"space-between"}>
+            <Flex alignItems={"center"}>
+              <DefaultPropfile name={postData?.data?.author?.name ?? ""} />
 
-            <Stack spacing={"6px"} ml="13px">
-              <Text fontSize={"16px"} fontWeight={"bold"}>
-                {postData?.data.author.name ?? ""}
-              </Text>
-
-              <HStack spacing={"14px"}>
+              <Stack spacing={"6px"} ml="13px">
                 <Text fontSize={"16px"} fontWeight={"bold"}>
-                  {getProgressTime(postData?.data.createdAt) ?? ""}
+                  {postData?.data?.author?.name ?? ""}
                 </Text>
 
-                <Text fontSize={"16px"} fontWeight={"bold"}>
-                  뷰 {postData?.data.view ?? 0}
-                </Text>
-
-                {postData?.data.updatedAt !== postData?.data.createdAt && (
+                <HStack spacing={"14px"}>
                   <Text fontSize={"16px"} fontWeight={"bold"}>
-                    수정됨
+                    {getProgressTime(postData?.data.createdAt) ?? ""}
                   </Text>
-                )}
-              </HStack>
-            </Stack>
+
+                  <Text fontSize={"16px"} fontWeight={"bold"}>
+                    뷰 {postData?.data.view ?? 0}
+                  </Text>
+
+                  {postData?.data.updatedAt !== postData?.data.createdAt && (
+                    <Text fontSize={"16px"} fontWeight={"bold"}>
+                      수정됨
+                    </Text>
+                  )}
+                </HStack>
+              </Stack>
+            </Flex>
+
+            {getUserId === postData?.data.authorId && (
+              <Flex>
+                <TextButton onClick={onModifyPost} mr="26px" fontSize={"16px"}>
+                  수정
+                </TextButton>
+
+                <TextButton onClick={onDeletePost} fontSize={"16px"}>
+                  삭제
+                </TextButton>
+              </Flex>
+            )}
           </Flex>
 
           {/* 타이틀 */}
@@ -339,9 +382,9 @@ function PostContent() {
         {/* 태그 */}
         <Flex justifyContent={"space-between"}>
           <HStack spacing={"20px"}>
-            {tags.map((item, i) => (
+            {(postData?.data.postTagJoin ?? []).map((item, i) => (
               <React.Fragment key={i.toString()}>
-                <Tag name={item} />
+                <Tag name={item.tag.text} />
               </React.Fragment>
             ))}
           </HStack>

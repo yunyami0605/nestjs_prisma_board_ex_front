@@ -7,7 +7,7 @@ import { useRouter } from "next/router";
 import { usePostSignup } from "@/api/auth/mutation";
 import FormErrorLabel from "@/components/common/form/FormErrorLabel";
 import useToastShow from "@/hooks/useToast";
-import { EMAIL_REGREX } from "@/constants/reqexp";
+import { EMAIL_REGREX } from "@/constants/reqExp";
 
 /**
  *@description 회원가입 페이지
@@ -65,11 +65,11 @@ function Signup() {
   const onChangePasswordConfirm = (value: string) => {
     setPasswordConfirm(value);
 
-    if (value !== form.password)
-      setErrorMessage((prev) => ({
-        ...prev,
-        passwordConfirm: "비밀번호가 일치하지 않습니다.",
-      }));
+    setErrorMessage((prev) => ({
+      ...prev,
+      passwordConfirm:
+        value !== form.password ? "비밀번호가 일치하지 않습니다." : "",
+    }));
   };
 
   return (
