@@ -1,4 +1,4 @@
-import { LikeType } from "@/types/page/posts";
+import { LikeType, PatchForm } from "@/types/page/posts";
 
 export interface GetPostsQuery {
   id?: string;
@@ -41,4 +41,13 @@ export interface GetPostResponse {
     postId: number;
     userId: number;
   }[];
+  postTagJoin: {
+    tag: { text: string };
+  }[];
 }
+
+export type PatchPostData = Omit<PatchForm, "postId">;
+
+export type DeletePostData = {
+  postId: number;
+};

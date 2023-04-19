@@ -1,7 +1,8 @@
 import { apiCall } from "../common";
 import { useMutation } from "react-query";
 import { LikeData, MutationResponse } from "@/types/api/common";
-import { PostForm } from "@/types/page/posts";
+import { PatchForm, PostForm } from "@/types/page/posts";
+import { DeletePostData, PatchPostData } from "@/types/api/post";
 
 export const postPost = (data: PostForm) => {
   return apiCall<MutationResponse>({
@@ -16,6 +17,35 @@ export const postPost = (data: PostForm) => {
  */
 export const usePostPost = () => {
   return useMutation((data: PostForm) => postPost(data));
+};
+
+export const patchPost = (data: PatchPostData, postId: number) => {
+  return apiCall<MutationResponse>({
+    method: "PATCH",
+    url: `post/${postId}`,
+    data,
+  });
+};
+
+/**
+ *@description 게시글 수정 api 호출 훅
+ */
+export const usePatchPost = () => {
+  return useMutation((data: PatchForm) => patchPost({ ...data }, data.postId));
+};
+
+export const deletePost = (data: DeletePostData) => {
+  return apiCall<MutationResponse>({
+    method: "DELETE",
+    url: `post/${data.postId}`,
+  });
+};
+
+/**
+ *@description 게시글 삭제 api 호출 훅
+ */
+export const useDeletePost = () => {
+  return useMutation((data: DeletePostData) => deletePost(data));
 };
 
 export const postLike = (data: LikeData) => {

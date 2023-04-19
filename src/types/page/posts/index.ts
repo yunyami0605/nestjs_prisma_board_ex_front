@@ -34,3 +34,8 @@ export type PostForm = {
   content: string;
   tags: string[];
 };
+
+export type PatchForm = PostForm & {
+  authorId: number;
+  postId: number;
+};
