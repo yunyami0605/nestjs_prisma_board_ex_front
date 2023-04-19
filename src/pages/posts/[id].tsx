@@ -35,7 +35,6 @@ import useGetUserId from "@/hooks/useGetUserId";
 /**
  *@description 게시글 내용 페이지
  *@todo 좋아요/싫어요 상태 확인 퍼블 추가
- *@todo 게시글 수정, 삭제 추가
  *@todo 배포
  *@todo 싫어요에 대한 api 수정하기
  *@todo redis 셋팅 및 연구
@@ -76,8 +75,6 @@ function PostContent() {
     isFetchingNextPage,
     refetch,
   } = useGetComments(query.id);
-
-  const tags = ["IOS", "IOS", "IOS"];
 
   const onUpdateRecomment = () => {
     if (selectedComment) {
@@ -180,6 +177,8 @@ function PostContent() {
   };
 
   const onDeleteComment = () => {
+    if (!confirm("정말로 삭제하시겠습니까?")) return;
+
     if (selectedComment?.id) {
       deleteComment
         .mutateAsync(selectedComment?.id)
@@ -260,12 +259,13 @@ function PostContent() {
     }
   };
 
-  const onModifyPost = () => {
+  const onUpdatePost = () => {
     if (!query?.id) return toastShow("잘못된 접근입니다.");
-    router.push(`/register/${query.id}`);
+    router.push(`/posts/register/${query.id}`);
   };
 
   const onDeletePost = () => {
+    if (!confirm("정말로 삭제하시겠습니까?")) return;
     if (!query?.id) return toastShow("잘못된 접근입니다.");
 
     deletePost
@@ -357,7 +357,7 @@ function PostContent() {
 
             {getUserId === postData?.data.authorId && (
               <Flex>
-                <TextButton onClick={onModifyPost} mr="26px" fontSize={"16px"}>
+                <TextButton onClick={onUpdatePost} mr="26px" fontSize={"16px"}>
                   수정
                 </TextButton>
 

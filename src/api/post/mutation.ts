@@ -31,7 +31,13 @@ export const patchPost = (data: PatchPostData, postId: number) => {
  *@description 게시글 수정 api 호출 훅
  */
 export const usePatchPost = () => {
-  return useMutation((data: PatchForm) => patchPost({ ...data }, data.postId));
+  return useMutation((data: PatchForm) => {
+    const _data: Omit<PatchForm, "postId"> &
+      Partial<Pick<PatchForm, "postId">> = { ...data };
+    delete _data["postId"];
+
+    return patchPost({ ..._data }, data.postId);
+  });
 };
 
 export const deletePost = (data: DeletePostData) => {
